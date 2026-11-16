@@ -1,33 +1,59 @@
 
-import { useState } from 'react'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+
+const API_URL =
+  "https://ownlb6scjir2ykyospuxdqtmpm0erqjw.lambda-url.us-east-2.on.aws/";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const callLambda = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(API_URL);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setMessage(data.message);
+    } catch (err) {
+      console.error(err);
+      setError("Unable to connect to AWS Lambda.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <main className="app">
+    <div className="App">
       <h1>CSCE 3420 Web Application</h1>
       <h2>Tanatswa Gwaze</h2>
 
+      <p>Welcome to my AWS Cloud Web Application!</p>
       <p>
-        Welcome to my AWS Cloud Web Application!
+        Built using React, AWS Amplify, AWS Lambda,
+        and Amazon DynamoDB.
       </p>
 
-      <p>
-        Built using React, AWS Amplify,
-        AWS Lambda, and Amazon DynamoDB.
-      </p>
-
-      <button onClick={() => setCount(count + 1)}>
-        Click Me: {count}
+      <button onClick={callLambda} disabled={loading}>
+        {loading ? "Connecting..." : "Call AWS Lambda"}
       </button>
 
-      <p className="footer">
+      {message && <p>{message}</p>}
+      {error && <p role="alert">{error}</p>}
+
+      <footer>
         University of North Texas | Fall 2026
-      </p>
-    </main>
-  )
+      </footer>
+    </div>
+  );
 }
 
-export default App
+export default App;
